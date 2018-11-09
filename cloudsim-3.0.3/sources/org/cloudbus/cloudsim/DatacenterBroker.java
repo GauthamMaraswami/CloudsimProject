@@ -9,6 +9,7 @@
 package org.cloudbus.cloudsim;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -407,10 +408,13 @@ public void shiftqueues(Queue<Dag_Node> extract_queue,List<PriorityQueue<Dag_Nod
 		pqlist.add(pque);;
 		pque = pqlist.get(0);
 		Queue<Dag_Node> extract_queue = new LinkedList<Dag_Node>();
-		int vmIndex = 0;
+		int no_of_vms = getVmsCreatedList().size();
+		List<Integer> VmMap=new ArrayList<Integer>(no_of_vms+1);
+		for(int i=0;i<no_of_vms;++i)
+			VmMap.add(0);
 		while (!pque.isEmpty()) {
 			PriorityQueue<Dag_Node> pqueNew = new PriorityQueue<Dag_Node>(pque);
-			int no_of_vms = getVmsCreatedList().size();
+
 			int vmctr = 0;
 			while (vmctr < no_of_vms && !pque.isEmpty()) {
 				Dag_Node node = pque.poll();
@@ -436,9 +440,16 @@ public void shiftqueues(Queue<Dag_Node> extract_queue,List<PriorityQueue<Dag_Nod
 
 				Cloudlet cloudlet = cloudletMap.get(node.getP_id());
 				Vm vm;
+				
+				int minVM=Collections.min(VmMap);
+				int vmIndex=VmMap.indexOf(minVM);
+				VmMap.set(vmIndex, minVM+node.getTime());
+				
+				
 				// if user didn't bind this cloudlet and it has not been executed yet
 				if (cloudlet.getVmId() == -1) {
 					vm = getVmsCreatedList().get(vmIndex);
+				
 				} else { // submit to the specific vm
 					vm = VmList.getById(getVmsCreatedList(), cloudlet.getVmId());
 					if (vm == null) { // vm was not created
